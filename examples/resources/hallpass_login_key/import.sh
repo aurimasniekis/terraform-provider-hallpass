@@ -1,0 +1,2 @@
+# <role_id>/<login_key_id>
+terraform import hallpass_login_key.web1_inspect rol_01m5qh1t09e4jbmeys0q0bjz8j/cred_01m5qh1t09e4jbmeys0q0bjz8k

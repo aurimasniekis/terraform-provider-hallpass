@@ -1,0 +1,2 @@
+# Rule ID
+terraform import hallpass_policy_rule.sre_inspect pol_01m5qh1t09e4jbmeys0q0bjz8j

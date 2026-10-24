@@ -1,0 +1,20 @@
+# Build output and the exported HallPass source used by the acceptance tests
+/bin/
+/.hallpass-src/
+/dist/
+
+# Terraform working files
+.terraform/
+.terraform.lock.hcl
+*.tfstate
+*.tfstate.*
+*.tfplan
+tfplan
+crash.log
+.terraformrc
+terraform.rc
+
+# Editors / OS
+.idea/
+.vscode/
+.DS_Store

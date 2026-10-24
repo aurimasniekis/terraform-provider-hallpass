@@ -1,0 +1,2 @@
+# <provider_id>/<mapping_id>
+terraform import hallpass_oidc_group_mapping.admins oidc_01m5qh1t09e4jbmeys0q0bjz8j/ogm_01m5qh1t09e4jbmeys0q0bjz8k
