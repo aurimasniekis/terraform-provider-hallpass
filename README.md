@@ -30,7 +30,8 @@ The provider authenticates with a HallPass **API token** (`hallpass_at_…`). An
 **Administration → API tokens** (it needs a recent sign-in with MFA). A token:
 
 - acts for the administrator who created it, with one of their roles (use **Administrator** for Terraform);
-- stops working when it expires (1-366 days), is revoked, or its creator is disabled or loses the role;
+- stops working when it expires (1-366 days, or never if issued with **Never expires**), is revoked, or its creator is
+  disabled or loses the role;
 - can read and change configuration only. Approving requests, reading recordings, managing operators and tokens, and
   lockdown always need a person in the console.
 
