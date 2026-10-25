@@ -1,6 +1,9 @@
 package client
 
-import "context"
+import (
+	"context"
+	"net/http"
+)
 
 // GatewayHostKey is a host key of the HallPass SSH gateway (for agents' known_hosts).
 type GatewayHostKey struct {
@@ -50,4 +53,51 @@ func (c *Client) ListGroups(ctx context.Context) ([]Group, error) {
 		return nil, err
 	}
 	return l.Items, nil
+}
+
+// BackupTarget is the object storage target of scheduled backups (the secret is never returned).
+type BackupTarget struct {
+	Enabled             bool   `json:"enabled"`
+	Endpoint            string `json:"endpoint"`
+	Region              string `json:"region"`
+	Bucket              string `json:"bucket"`
+	Prefix              string `json:"prefix"`
+	PathStyle           bool   `json:"path_style"`
+	AccessKeyID         string `json:"access_key_id"`
+	CABundlePEM         string `json:"ca_bundle_pem,omitempty"`
+	AllowPrivateNetwork bool   `json:"allow_private_network"`
+	Interval            string `json:"interval"`
+	KeepLast            int64  `json:"keep_last"`
+	KeepDailyDays       int64  `json:"keep_daily_days"`
+	Version             int64  `json:"version"`
+}
+
+// BackupTargetInput creates or replaces the target. SecretAccessKey is omitted to keep the stored one.
+type BackupTargetInput struct {
+	Enabled             bool    `json:"enabled"`
+	Endpoint            string  `json:"endpoint"`
+	Region              string  `json:"region"`
+	Bucket              string  `json:"bucket"`
+	Prefix              string  `json:"prefix"`
+	PathStyle           bool    `json:"path_style"`
+	AccessKeyID         string  `json:"access_key_id"`
+	SecretAccessKey     *string `json:"secret_access_key,omitempty"`
+	CABundlePEM         string  `json:"ca_bundle_pem"`
+	AllowPrivateNetwork bool    `json:"allow_private_network"`
+	Interval            string  `json:"interval"`
+	KeepLast            int64   `json:"keep_last"`
+	KeepDailyDays       int64   `json:"keep_daily_days"`
+}
+
+func (c *Client) GetBackupTarget(ctx context.Context) (*BackupTarget, error) {
+	return get[BackupTarget](ctx, c, "/system/backups/target", nil)
+}
+
+// PutBackupTarget creates the target (version 0) or replaces it (If-Match version).
+func (c *Client) PutBackupTarget(ctx context.Context, version int64, in BackupTargetInput) (*BackupTarget, error) {
+	return call[BackupTarget](ctx, c, &request{method: http.MethodPut, path: "/system/backups/target", body: in, version: version})
+}
+
+func (c *Client) DeleteBackupTarget(ctx context.Context) error {
+	return c.del(ctx, "/system/backups/target")
 }

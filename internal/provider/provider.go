@@ -149,6 +149,7 @@ func (p *hallpassProvider) Resources(context.Context) []func() resource.Resource
 		NewOIDCProviderResource,
 		NewOIDCGroupMappingResource,
 		NewAuthSettingsResource,
+		NewBackupTargetResource,
 		NewIntegrationResource,
 		NewNotificationRouteResource,
 	}

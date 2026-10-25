@@ -8,7 +8,7 @@ GOLANGCI_LINT ?= golangci-lint
 
 # HallPass source the acceptance tests run against (exported read-only from a local checkout).
 HALLPASS_REPO   ?= ../hallpass
-HALLPASS_COMMIT ?= 079148c
+HALLPASS_COMMIT ?= f5eb56f
 
 .DEFAULT_GOAL := help
 .PHONY: help build install test testacc lint fmt vet docs docs-check hallpass-src hallpass-bin example clean

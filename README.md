@@ -61,6 +61,7 @@ approvers and Slack approvals.
 | `hallpass_notification_route` | Where approval requests for which servers go | `<route_id>` |
 | `hallpass_self_approval` | Whether agent owners may approve their own agents | — |
 | `hallpass_auth_settings` | Whether password sign-in is turned off | — |
+| `hallpass_backup_target` | Scheduled, encrypted backups to S3-compatible storage | `backup-target` |
 
 Data sources: `hallpass_server`, `hallpass_agent`, `hallpass_role`, `hallpass_operator` (find an operator by email,
 for approver rules) and `hallpass_gateway_host_keys` (the gateway's host keys and `known_hosts` lines for agents).

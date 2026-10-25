@@ -4,6 +4,14 @@ All notable changes to the HallPass Terraform provider are documented in this fi
 [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/) and versions follow
 [Semantic Versioning](https://semver.org/). Before 1.0, resources and attributes may change between minor versions.
 
+## [Unreleased]
+
+Needs HallPass with backups to object storage (after 0.1.1).
+
+### Added
+
+- `hallpass_backup_target`: scheduled, encrypted backups to S3-compatible object storage, with schedule and retention.
+
 ## [0.1.0] - 2026-10-25
 
 First release, for [HallPass 0.1.0](https://github.com/aurimasniekis/go-hallpass/releases/tag/v0.1.0).
