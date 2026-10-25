@@ -93,6 +93,9 @@ func (c *Client) DeleteOIDCMapping(ctx context.Context, providerID, id string) e
 // AuthSettings are installation-wide sign-in settings.
 type AuthSettings struct {
 	LocalLoginDisabled bool `json:"local_login_disabled"`
+	// DirectProvider is the slug of the SSO provider the sign-in page goes to directly ("" for none). Omitted in a
+	// request, HallPass leaves it unchanged (servers before 0.3.0 do not know the field).
+	DirectProvider *string `json:"direct_provider,omitempty"`
 }
 
 func (c *Client) GetAuthSettings(ctx context.Context) (*AuthSettings, error) {

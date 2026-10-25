@@ -6,6 +6,11 @@ All notable changes to the HallPass Terraform provider are documented in this fi
 
 ## [Unreleased]
 
+### Added
+
+- `hallpass_auth_settings.direct_provider`: send the sign-in page straight to one single sign-on provider, with
+  `/login/password` as the fallback. Needs HallPass 0.3.0.
+
 ## [0.2.0] - 2026-10-25
 
 For [HallPass 0.2.0](https://github.com/aurimasniekis/go-hallpass/releases/tag/v0.2.0); `hallpass_backup_target` needs it.

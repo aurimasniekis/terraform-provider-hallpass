@@ -135,3 +135,48 @@ func TestAccAuthSettingsRefusesLockout(t *testing.T) {
 		},
 	})
 }
+
+// The sign-in page can go straight to an enabled SSO provider; a disabled one is refused.
+func TestAccAuthSettingsDirectProvider(t *testing.T) {
+	testAccPreCheck(t)
+	slug := randName("idp")
+	cfg := func(enabled bool, direct string) string {
+		return fmt.Sprintf(`
+resource "hallpass_oidc_provider" "p" {
+  slug          = %q
+  display_name  = "Corp"
+  issuer        = "https://login.example.com"
+  client_id     = "hallpass"
+  client_secret = "s3cret-value"
+  provisioning  = "jit"
+  jit = {
+    email_domains = ["example.com"]
+  }
+  enabled = %t
+}
+
+resource "hallpass_auth_settings" "a" {
+  local_login_disabled = false
+  direct_provider      = %s
+}
+`, slug, enabled, direct)
+	}
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config:      cfg(false, "hallpass_oidc_provider.p.slug"),
+				ExpectError: regexp.MustCompile(`Cannot change sign-in settings`),
+			},
+			{
+				Config: cfg(true, "hallpass_oidc_provider.p.slug"),
+				Check:  resource.TestCheckResourceAttr("hallpass_auth_settings.a", "direct_provider", slug),
+			},
+			{
+				Config: cfg(true, `""`),
+				Check:  resource.TestCheckResourceAttr("hallpass_auth_settings.a", "direct_provider", ""),
+			},
+		},
+	})
+}

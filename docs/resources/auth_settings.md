@@ -3,12 +3,12 @@
 page_title: "hallpass_auth_settings Resource - hallpass"
 subcategory: ""
 description: |-
-  Console sign-in settings. Installation-wide: declare it at most once. HallPass refuses to turn off password sign-in until an administrator has completed a single sign-on test login, so a broken SSO setup cannot lock everyone out. Destroying it turns password sign-in back on.
+  Console sign-in settings. Installation-wide: declare it at most once. HallPass refuses to turn off password sign-in until an administrator has completed a single sign-on test login, so a broken SSO setup cannot lock everyone out. Destroying it turns password sign-in back on and shows the sign-in options again.
 ---
 
 # hallpass_auth_settings (Resource)
 
-Console sign-in settings. Installation-wide: declare it at most once. HallPass refuses to turn off password sign-in until an administrator has completed a single sign-on test login, so a broken SSO setup cannot lock everyone out. Destroying it turns password sign-in back on.
+Console sign-in settings. Installation-wide: declare it at most once. HallPass refuses to turn off password sign-in until an administrator has completed a single sign-on test login, so a broken SSO setup cannot lock everyone out. Destroying it turns password sign-in back on and shows the sign-in options again.
 
 ## Example Usage
 
@@ -25,6 +25,10 @@ resource "hallpass_auth_settings" "this" {
 ### Required
 
 - `local_login_disabled` (Boolean) Turn off password sign-in (single sign-on only).
+
+### Optional
+
+- `direct_provider` (String) Slug of an enabled single sign-on provider the sign-in page goes to directly instead of showing the sign-in options; `""` shows them. `/login/password` always shows every sign-in method. Left out, the setting is not managed. Needs HallPass 0.3.0 or later.
 
 ### Read-Only
 
