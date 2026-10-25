@@ -6,7 +6,9 @@ All notable changes to the HallPass Terraform provider are documented in this fi
 
 ## [Unreleased]
 
-Needs HallPass with backups to object storage (after 0.1.1).
+## [0.2.0] - 2026-10-25
+
+For [HallPass 0.2.0](https://github.com/aurimasniekis/go-hallpass/releases/tag/v0.2.0); `hallpass_backup_target` needs it.
 
 ### Added
 
@@ -29,4 +31,5 @@ First release, for [HallPass 0.1.0](https://github.com/aurimasniekis/go-hallpass
   `hallpass_gateway_host_keys`.
 - Optimistic concurrency on every update (`If-Match`), and retried creates that never duplicate (`Idempotency-Key`).
 
+[0.2.0]: https://github.com/aurimasniekis/terraform-provider-hallpass/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/aurimasniekis/terraform-provider-hallpass/releases/tag/v0.1.0
