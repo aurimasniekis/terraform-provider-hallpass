@@ -15,7 +15,8 @@ Manages a [HallPass](https://github.com/aurimasniekis/go-hallpass) gateway (a te
 terraform {
   required_providers {
     hallpass = {
-      source = "aurimasniekis/hallpass"
+      source  = "aurimasniekis/hallpass"
+      version = "~> 0.1"
     }
   }
 }

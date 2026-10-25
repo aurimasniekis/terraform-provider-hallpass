@@ -4,8 +4,8 @@ Manage a [HallPass](https://github.com/aurimasniekis/go-hallpass) gateway (a ter
 code: agents and their keys, servers and git remotes, roles and git access profiles, pinned host keys, login keys,
 policy and approver rules, single sign-on, chat approvals and installation settings.
 
-Built with [terraform-plugin-framework](https://github.com/hashicorp/terraform-plugin-framework) (protocol 6). Tested
-against a real HallPass started by the acceptance tests, with Terraform 1.11.
+Built with [terraform-plugin-framework](https://github.com/hashicorp/terraform-plugin-framework) (protocol 6). Needs
+HallPass 0.1.0 or later. Tested against a real HallPass started by the acceptance tests, with Terraform 1.11.
 
 ## Usage
 
@@ -13,7 +13,8 @@ against a real HallPass started by the acceptance tests, with Terraform 1.11.
 terraform {
   required_providers {
     hallpass = {
-      source = "aurimasniekis/hallpass"
+      source  = "aurimasniekis/hallpass"
+      version = "~> 0.1"
     }
   }
 }

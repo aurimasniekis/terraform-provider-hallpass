@@ -9,9 +9,9 @@ permissions:
   contents: read
 
 env:
-  # HallPass revision the acceptance tests run against.
+  # HallPass revision the acceptance tests run against (v0.1.0).
   HALLPASS_REPOSITORY: aurimasniekis/go-hallpass
-  HALLPASS_COMMIT: fb3911a10189c218f2138a428375f343649cd84f
+  HALLPASS_COMMIT: 079148ce3a049a0130f31066739ecf96fc4f0a2a
   TERRAFORM_VERSION: 1.11.4
 
 jobs:
