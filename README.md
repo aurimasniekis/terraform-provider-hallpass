@@ -5,7 +5,7 @@ code: agents and their keys, servers and git remotes, roles and git access profi
 policy and approver rules, single sign-on, chat approvals and installation settings.
 
 Built with [terraform-plugin-framework](https://github.com/hashicorp/terraform-plugin-framework) (protocol 6). Needs
-HallPass 0.1.0 or later (`hallpass_backup_target` needs 0.2.0). Tested against a real HallPass started by the acceptance tests, with Terraform 1.11.
+HallPass 0.1.0 or later (`hallpass_backup_target` needs 0.2.0, `direct_provider` on `hallpass_auth_settings` needs 0.3.0). Tested against a real HallPass started by the acceptance tests, with Terraform 1.11.
 
 ## Usage
 

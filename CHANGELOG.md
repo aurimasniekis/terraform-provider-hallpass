@@ -6,10 +6,14 @@ All notable changes to the HallPass Terraform provider are documented in this fi
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-10-26
+
+For [HallPass 0.3.0](https://github.com/aurimasniekis/go-hallpass/releases/tag/v0.3.0); `direct_provider` needs it.
+
 ### Added
 
 - `hallpass_auth_settings.direct_provider`: send the sign-in page straight to one single sign-on provider, with
-  `/login/password` as the fallback. Needs HallPass 0.3.0.
+  `/login/password` as the fallback.
 
 ## [0.2.0] - 2026-10-25
 
@@ -36,5 +40,6 @@ First release, for [HallPass 0.1.0](https://github.com/aurimasniekis/go-hallpass
   `hallpass_gateway_host_keys`.
 - Optimistic concurrency on every update (`If-Match`), and retried creates that never duplicate (`Idempotency-Key`).
 
+[0.3.0]: https://github.com/aurimasniekis/terraform-provider-hallpass/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/aurimasniekis/terraform-provider-hallpass/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/aurimasniekis/terraform-provider-hallpass/releases/tag/v0.1.0
