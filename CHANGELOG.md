@@ -6,6 +6,21 @@ All notable changes to the HallPass Terraform provider are documented in this fi
 
 ## [Unreleased]
 
+For HallPass 0.5.0; the new resources need it.
+
+### Added
+
+- `hallpass_api_token`: an API token issued by the provider's Administrator token, for any role (for example a
+  read-only Auditor token for an integration). The token is exported once (sensitive), rotated with `triggers`, issued
+  again when revoked or expired outside Terraform, and revoked on destroy.
+- `hallpass_operator`: operators with manual roles, operator groups and enabled state. Destroying disables the
+  operator.
+- `hallpass_operator_identity`: link a single sign-on identity (issuer and subject) to an operator.
+- `hallpass_operator_chat_link`: link a Slack or Telegram account to an operator for chat approvals.
+- `hallpass_destination_collector`: enroll a destination audit collector's key on a server, by server ID and public
+  key.
+- `hallpass_egress` data source: the gateway's egress ranges and source addresses (read-only).
+
 ## [0.3.0] - 2026-10-26
 
 For [HallPass 0.3.0](https://github.com/aurimasniekis/go-hallpass/releases/tag/v0.3.0); `direct_provider` needs it.

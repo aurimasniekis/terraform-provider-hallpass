@@ -57,8 +57,8 @@ func TestSchemasAreValid(t *testing.T) {
 			t.Errorf("%s has no description", md.TypeName)
 		}
 	}
-	if len(seen) != 18 {
-		t.Errorf("got %d resources, want 18", len(seen))
+	if len(seen) != 23 {
+		t.Errorf("got %d resources, want 23", len(seen))
 	}
 	for _, f := range p.DataSources(ctx) {
 		d := f()

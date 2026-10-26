@@ -1,0 +1,2 @@
+# Collector ID
+terraform import hallpass_destination_collector.web1 dac_01m5qh1t09e4jbmeys0q0bjz8j

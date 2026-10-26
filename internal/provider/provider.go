@@ -152,6 +152,11 @@ func (p *hallpassProvider) Resources(context.Context) []func() resource.Resource
 		NewBackupTargetResource,
 		NewIntegrationResource,
 		NewNotificationRouteResource,
+		NewDestinationCollectorResource,
+		NewOperatorResource,
+		NewOperatorIdentityResource,
+		NewChatLinkResource,
+		NewAPITokenResource,
 	}
 }
 
@@ -162,5 +167,6 @@ func (p *hallpassProvider) DataSources(context.Context) []func() datasource.Data
 		NewRoleDataSource,
 		NewOperatorDataSource,
 		NewGatewayHostKeysDataSource,
+		NewEgressDataSource,
 	}
 }

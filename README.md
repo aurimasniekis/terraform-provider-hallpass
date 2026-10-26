@@ -5,7 +5,7 @@ code: agents and their keys, servers and git remotes, roles and git access profi
 policy and approver rules, single sign-on, chat approvals and installation settings.
 
 Built with [terraform-plugin-framework](https://github.com/hashicorp/terraform-plugin-framework) (protocol 6). Needs
-HallPass 0.1.0 or later (`hallpass_backup_target` needs 0.2.0, `direct_provider` on `hallpass_auth_settings` needs 0.3.0). Tested against a real HallPass started by the acceptance tests, with Terraform 1.11.
+HallPass 0.1.0 or later (`hallpass_backup_target` needs 0.2.0, `direct_provider` on `hallpass_auth_settings` needs 0.3.0, and the operator, API token, destination collector and egress resources need 0.5.0). Tested against a real HallPass started by the acceptance tests, with Terraform 1.11.
 
 ## Usage
 
@@ -29,11 +29,12 @@ provider "hallpass" {
 The provider authenticates with a HallPass **API token** (`hallpass_at_…`). An administrator creates one under
 **Administration → API tokens** (it needs a recent sign-in with MFA). A token:
 
-- acts for the administrator who created it, with one of their roles (use **Administrator** for Terraform);
+- acts for the administrator who created it, with one role (use **Administrator** for Terraform);
 - stops working when it expires (1-366 days, or never if issued with **Never expires**), is revoked, or its creator is
   disabled or loses the role;
-- can read and change configuration only. Approving requests, reading recordings, managing operators and tokens, and
-  lockdown always need a person in the console.
+- can read and change configuration, and with the Administrator role manage operators and issue tokens of its own
+  (`hallpass_operator`, `hallpass_api_token`). Approving requests, reading recordings, invitations and lockdown always
+  need a person in the console.
 
 Every change Terraform makes is in the HallPass audit log under the token creator's name, marked with the token.
 
@@ -63,9 +64,15 @@ approvers and Slack approvals.
 | `hallpass_self_approval` | Whether agent owners may approve their own agents | — |
 | `hallpass_auth_settings` | Whether password sign-in is turned off | — |
 | `hallpass_backup_target` | Scheduled, encrypted backups to S3-compatible storage | `backup-target` |
+| `hallpass_destination_collector` | A destination audit collector's key on one server | `<collector_id>` |
+| `hallpass_operator` | A person who signs in to the console, with roles and groups | `<operator_id>` |
+| `hallpass_operator_identity` | A single sign-on identity linked to an operator | `<operator_id>/<provider_id>/<subject>` |
+| `hallpass_operator_chat_link` | A Slack or Telegram account an operator approves from | `<operator_id>/<platform>/<workspace>/<user_id>` |
+| `hallpass_api_token` | An API token for an integration, e.g. read-only Auditor | — |
 
 Data sources: `hallpass_server`, `hallpass_agent`, `hallpass_role`, `hallpass_operator` (find an operator by email,
-for approver rules) and `hallpass_gateway_host_keys` (the gateway's host keys and `known_hosts` lines for agents).
+for approver rules), `hallpass_gateway_host_keys` (the gateway's host keys and `known_hosts` lines for agents) and
+`hallpass_egress` (the gateway's egress ranges and source addresses from its configuration file).
 
 ### Things to know
 
@@ -99,6 +106,14 @@ for approver rules) and `hallpass_gateway_host_keys` (the gateway's host keys an
   keys by adding the new key before removing the old one.
 - **Deleting keeps history.** Destroying an agent, server, git remote, role or profile deletes it in HallPass: access
   ends and its keys are revoked, and the name can be reused. Past sessions and the audit log still show it.
+- **The provider's token is powerful.** With operators and identities in Terraform, whoever holds the Administrator
+  token can create an approver account and link their own SSO identity or chat account to it. Keep it in a secret
+  manager and give integrations their own lower-role `hallpass_api_token`.
+- **Operators are disabled, not deleted.** Destroying a `hallpass_operator` disables it and removes its manual roles;
+  the provider's token cannot change the operator it acts for. `hallpass_api_token` values exist only in state, so
+  write them to your secret manager in the same configuration.
+- **Egress stays in the configuration file.** `egress.allow_cidrs` guards against servers being pointed at internal
+  addresses, so Terraform only reads it (`hallpass_egress`). Set it to the subnets your servers live in.
 - **Durations** are written as `30m`, `4h` or `1h30m`.
 - **Disabling** (`enabled = false`) ends active access within seconds and cancels pending requests; set it back to
   `true` to let policy decide again.

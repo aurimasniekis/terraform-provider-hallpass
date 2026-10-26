@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -302,5 +303,55 @@ func (d *gatewayKeysDataSource) Read(ctx context.Context, req datasource.ReadReq
 	if len(lines) > 0 {
 		m.KnownHosts = types.StringValue(strings.Join(lines, "\n") + "\n")
 	}
+	resp.Diagnostics.Append(resp.State.Set(ctx, &m)...)
+}
+
+// ---- hallpass_egress
+
+type egressDataSource struct{ baseDataSource }
+
+// NewEgressDataSource returns the hallpass_egress data source.
+func NewEgressDataSource() datasource.DataSource { return &egressDataSource{} }
+
+type egressModel struct {
+	AllowCIDRs        types.List `tfsdk:"allow_cidrs"`
+	AllowSpecialCIDRs types.List `tfsdk:"allow_special_cidrs"`
+	SourceAddresses   types.List `tfsdk:"source_addresses"`
+}
+
+func (d *egressDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_egress"
+}
+
+func (d *egressDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+	resp.Schema = schema.Schema{
+		MarkdownDescription: "The gateway's egress settings, read from its configuration file: where destinations may be, and the " +
+			"addresses HallPass connects from (for destination firewalls and `from=` restrictions). They are changed in the " +
+			"configuration file, not through Terraform. Needs a token that may read server addresses (Administrator).",
+		Attributes: map[string]schema.Attribute{
+			"allow_cidrs": schema.ListAttribute{MarkdownDescription: "`egress.allow_cidrs`: ranges destinations may resolve into.",
+				ElementType: types.StringType, Computed: true},
+			"allow_special_cidrs": schema.ListAttribute{MarkdownDescription: "`egress.allow_special_cidrs`: normally denied ranges " +
+				"(loopback, link-local, metadata) that are allowed again.", ElementType: types.StringType, Computed: true},
+			"source_addresses": schema.ListAttribute{MarkdownDescription: "`egress.source_addresses`: the gateway's own addresses as " +
+				"destinations see them.", ElementType: types.StringType, Computed: true},
+		},
+	}
+}
+
+func (d *egressDataSource) Read(ctx context.Context, _ datasource.ReadRequest, resp *datasource.ReadResponse) {
+	e, err := d.client.GetEgress(ctx)
+	if err != nil {
+		apiError(&resp.Diagnostics, "Cannot read egress settings", err)
+		return
+	}
+	list := func(v []string) types.List {
+		vals := make([]attr.Value, 0, len(v))
+		for _, s := range v {
+			vals = append(vals, types.StringValue(s))
+		}
+		return types.ListValueMust(types.StringType, vals)
+	}
+	m := egressModel{AllowCIDRs: list(e.AllowCIDRs), AllowSpecialCIDRs: list(e.AllowSpecialCIDRs), SourceAddresses: list(e.SourceAddresses)}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &m)...)
 }
