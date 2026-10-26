@@ -6,7 +6,9 @@ All notable changes to the HallPass Terraform provider are documented in this fi
 
 ## [Unreleased]
 
-For HallPass 0.5.0; the new resources need it.
+## [0.4.0] - 2026-10-26
+
+For [HallPass 0.5.0](https://github.com/aurimasniekis/go-hallpass/releases/tag/v0.5.0); the new resources need it.
 
 ### Added
 
@@ -55,6 +57,7 @@ First release, for [HallPass 0.1.0](https://github.com/aurimasniekis/go-hallpass
   `hallpass_gateway_host_keys`.
 - Optimistic concurrency on every update (`If-Match`), and retried creates that never duplicate (`Idempotency-Key`).
 
+[0.4.0]: https://github.com/aurimasniekis/terraform-provider-hallpass/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/aurimasniekis/terraform-provider-hallpass/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/aurimasniekis/terraform-provider-hallpass/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/aurimasniekis/terraform-provider-hallpass/releases/tag/v0.1.0
