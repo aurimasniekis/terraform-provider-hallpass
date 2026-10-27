@@ -155,7 +155,8 @@ func (m roleModel) input(ctx context.Context, d *diag.Diagnostics) client.RoleIn
 	return in
 }
 
-// roleCRUD is shared by hallpass_role and hallpass_git_access_profile: both are roles in HallPass.
+// roleCRUD is shared by hallpass_role, hallpass_git_access_profile and hallpass_api_access_profile: all are roles
+// in HallPass.
 type roleCRUD[M any] struct {
 	client *client.Client
 	noun   string
@@ -163,7 +164,22 @@ type roleCRUD[M any] struct {
 	fill   func(m *M, ro *client.Role)
 	ids    func(m *M) (id, serverID types.String)
 	on     func(m *M) bool
-	isGit  bool
+	// kind is the server kind the role must belong to: "ssh", "git" or "api".
+	kind string
+}
+
+// resourceForKind names the resource that manages roles of a server kind.
+var resourceForKind = map[string]string{"ssh": "hallpass_role", "git": "hallpass_git_access_profile", "api": "hallpass_api_access_profile"}
+
+// roleKind infers a role's server kind from its rules.
+func roleKind(ro *client.Role) string {
+	switch {
+	case ro.Git != nil:
+		return "git"
+	case ro.API != nil:
+		return "api"
+	}
+	return "ssh"
 }
 
 func (c roleCRUD[M]) create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -204,9 +220,9 @@ func (c roleCRUD[M]) read(ctx context.Context, req resource.ReadRequest, resp *r
 		apiError(&resp.Diagnostics, "Cannot read "+c.noun, err)
 		return
 	}
-	if (ro.Git != nil) != c.isGit {
-		resp.Diagnostics.AddError("Wrong resource type", "HallPass role "+ro.ID+" belongs to a "+
-			map[bool]string{true: "git remote; manage it with hallpass_git_access_profile", false: "server; manage it with hallpass_role"}[ro.Git != nil]+".")
+	if k := roleKind(ro); k != c.kind {
+		resp.Diagnostics.AddError("Wrong resource type", "HallPass role "+ro.ID+" belongs to a server of kind "+k+"; manage it with "+
+			resourceForKind[k]+".")
 		return
 	}
 	c.fill(&state, ro)
@@ -256,7 +272,7 @@ func (c roleCRUD[M]) delete(ctx context.Context, req resource.DeleteRequest, res
 }
 
 func (r *roleResource) crud() roleCRUD[roleModel] {
-	return roleCRUD[roleModel]{client: r.client, noun: "role",
+	return roleCRUD[roleModel]{client: r.client, noun: "role", kind: "ssh",
 		input: func(ctx context.Context, m roleModel, d *diag.Diagnostics) client.RoleInput { return m.input(ctx, d) },
 		fill:  func(m *roleModel, ro *client.Role) { m.fill(ro) },
 		ids:   func(m *roleModel) (types.String, types.String) { return m.ID, m.ServerID },

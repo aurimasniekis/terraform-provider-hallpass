@@ -117,6 +117,7 @@ type Server struct {
 	Labels      map[string]string `json:"labels"`
 	Version     int64             `json:"version"`
 	DeletedAt   string            `json:"deleted_at,omitempty"`
+	API         *APITarget        `json:"api,omitempty"`
 }
 
 // ServerInput creates or replaces a server's attributes (kind and enabled only apply on create).
@@ -133,6 +134,7 @@ type ServerInput struct {
 	Metadata    map[string]string `json:"metadata"`
 	Groups      []string          `json:"groups"`
 	Labels      map[string]string `json:"labels"`
+	API         *APITarget        `json:"api,omitempty"`
 }
 
 func (c *Client) CreateServer(ctx context.Context, in ServerInput) (*Server, error) {
@@ -253,6 +255,7 @@ type Role struct {
 	Enabled               bool              `json:"enabled"`
 	Version               int64             `json:"version"`
 	Git                   *GitRules         `json:"git,omitempty"`
+	API                   *APIRules         `json:"api,omitempty"`
 	ApprovalsRequired     int64             `json:"approvals_required"`
 	DeletedAt             string            `json:"deleted_at,omitempty"`
 }
@@ -278,6 +281,7 @@ type RoleInput struct {
 	Labels                map[string]string `json:"labels,omitempty"`
 	Enabled               *bool             `json:"enabled,omitempty"`
 	Git                   *GitRules         `json:"git,omitempty"`
+	API                   *APIRules         `json:"api,omitempty"`
 	ApprovalsRequired     int64             `json:"approvals_required,omitempty"`
 }
 

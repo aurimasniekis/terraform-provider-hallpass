@@ -1,0 +1,1 @@
+terraform import hallpass_api_access_profile.read rol_01hzxv3k4f8m9q2r5t7w0y6c1a

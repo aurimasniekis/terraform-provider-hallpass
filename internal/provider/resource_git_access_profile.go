@@ -150,7 +150,7 @@ func (m gitProfileModel) input(ctx context.Context, d *diag.Diagnostics) client.
 }
 
 func (r *gitProfileResource) crud() roleCRUD[gitProfileModel] {
-	return roleCRUD[gitProfileModel]{client: r.client, noun: "git access profile", isGit: true,
+	return roleCRUD[gitProfileModel]{client: r.client, noun: "git access profile", kind: "git",
 		input: func(ctx context.Context, m gitProfileModel, d *diag.Diagnostics) client.RoleInput {
 			return m.input(ctx, d)
 		},

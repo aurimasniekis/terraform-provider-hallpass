@@ -53,6 +53,9 @@ approvers and Slack approvals.
 | `hallpass_host_key` | A pinned host key of a server or git remote | `<server_id>/<host_key_id>` |
 | `hallpass_role` | A role on a server: remote account, capabilities, limits | `<role_id>` |
 | `hallpass_git_access_profile` | Repositories and push rules on a git remote | `<role_id>` |
+| `hallpass_api_target` | An HTTPS API agents call through the API proxy | `<server_id>` |
+| `hallpass_api_access_profile` | Request rules on an API target | `<role_id>` |
+| `hallpass_api_credential` | The credential HallPass adds to a profile's requests | — |
 | `hallpass_login_key` | A login key HallPass generates for a role or profile | `<role_id>/<login_key_id>` |
 | `hallpass_login_key_activation` | Test-logs-in with a login key, then activates it | — |
 | `hallpass_policy_rule` | Who may see, request or auto-approve what | `<rule_id>` |
