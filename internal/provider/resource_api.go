@@ -14,6 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/aurimasniekis/terraform-provider-hallpass/internal/client"
@@ -362,8 +363,11 @@ type apiCredentialModel struct {
 	Username types.String `tfsdk:"username"`
 	Scopes   types.List   `tfsdk:"scopes"`
 	Secret   types.String `tfsdk:"secret"`
-	Hint     types.String `tfsdk:"hint"`
-	Version  types.Int64  `tfsdk:"version"`
+	// SecretWO is write-only: only the configuration holds it, never the plan or state.
+	SecretWO        types.String `tfsdk:"secret_wo"`
+	SecretWOVersion types.Int64  `tfsdk:"secret_wo_version"`
+	Hint            types.String `tfsdk:"hint"`
+	Version         types.Int64  `tfsdk:"version"`
 }
 
 func (r *apiCredentialResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -373,8 +377,9 @@ func (r *apiCredentialResource) Metadata(_ context.Context, req resource.Metadat
 func (r *apiCredentialResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		MarkdownDescription: "The credential HallPass adds to an API access profile's requests. The secret is encrypted in HallPass, " +
-			"never returned and never shown to agents; Terraform keeps it in state (sensitive), so protect the state. Changing it " +
-			"applies to the next proxied request. Destroying it removes the credential: the profile's requests fail until a new one is set.",
+			"never returned and never shown to agents. Give it as `secret` (kept in state, sensitive) or, with Terraform 1.11 or " +
+			"later, as write-only `secret_wo` (never stored in plan or state; for example from an ephemeral resource), sent when the " +
+			"credential is created and whenever `secret_wo_version` changes. Changing it applies to the next proxied request. Destroying it removes the credential: the profile's requests fail until a new one is set.",
 		Attributes: map[string]schema.Attribute{
 			"id":      idAttribute("The access profile ID (the credential has no ID of its own)."),
 			"role_id": parentAttribute("API access profile ID (`rol_…`).", "rol"),
@@ -386,7 +391,12 @@ func (r *apiCredentialResource) Schema(_ context.Context, _ resource.SchemaReque
 			"username": schema.StringAttribute{MarkdownDescription: "Username for type `basic`.", Optional: true},
 			"scopes": schema.ListAttribute{MarkdownDescription: "OAuth scopes for type `google_service_account` (default " +
 				"`https://www.googleapis.com/auth/cloud-platform`).", ElementType: types.StringType, Optional: true},
-			"secret": schema.StringAttribute{MarkdownDescription: "The token, password or service account key.", Required: true, Sensitive: true},
+			"secret": schema.StringAttribute{MarkdownDescription: "The token, password or service account key, kept in state. Exactly one " +
+				"of `secret` and `secret_wo` is required.", Optional: true, Sensitive: true},
+			"secret_wo": schema.StringAttribute{MarkdownDescription: "The token, password or service account key, write-only: never " +
+				"stored in plan or state. Needs `secret_wo_version`.", Optional: true, Sensitive: true, WriteOnly: true},
+			"secret_wo_version": schema.Int64Attribute{MarkdownDescription: "Change it to send `secret_wo` again (Terraform cannot see " +
+				"changes of a write-only value).", Optional: true},
 			// No UseStateForUnknown: both change with every update of the credential.
 			"hint":    schema.StringAttribute{MarkdownDescription: "The secret's last four characters, or the service account's email.", Computed: true},
 			"version": schema.Int64Attribute{MarkdownDescription: "Increases with every change.", Computed: true},
@@ -416,11 +426,28 @@ func (r *apiCredentialResource) ValidateConfig(ctx context.Context, req resource
 	if t == "basic" && m.Username.IsNull() {
 		resp.Diagnostics.AddAttributeError(path.Root("username"), "Missing username", "Type basic needs a username.")
 	}
+	if m.Secret.IsUnknown() || m.SecretWO.IsUnknown() {
+		return
+	}
+	switch {
+	case m.Secret.IsNull() == m.SecretWO.IsNull():
+		resp.Diagnostics.AddAttributeError(path.Root("secret"), "Secret", "Set exactly one of secret and secret_wo.")
+	case !m.SecretWO.IsNull() && m.SecretWOVersion.IsNull():
+		resp.Diagnostics.AddAttributeError(path.Root("secret_wo_version"), "Missing secret_wo_version",
+			"secret_wo needs secret_wo_version; change it to send a new secret_wo.")
+	case !m.Secret.IsNull() && !m.SecretWOVersion.IsNull():
+		resp.Diagnostics.AddAttributeError(path.Root("secret_wo_version"), "Not used with secret", "secret_wo_version only applies to secret_wo.")
+	}
 }
 
-func (m apiCredentialModel) input(ctx context.Context, d *diag.Diagnostics) client.APICredentialInput {
+// input builds the request; secretWO is the write-only secret from the configuration ("" when secret is used).
+func (m apiCredentialModel) input(ctx context.Context, secretWO string, d *diag.Diagnostics) client.APICredentialInput {
+	secret := m.Secret.ValueString()
+	if m.Secret.IsNull() {
+		secret = secretWO
+	}
 	in := client.APICredentialInput{Type: m.Type.ValueString(), Header: m.Header.ValueString(), Username: m.Username.ValueString(),
-		Secret: m.Secret.ValueString()}
+		Secret: secret}
 	if !m.Scopes.IsNull() {
 		d.Append(m.Scopes.ElementsAs(ctx, &in.Scopes, false)...)
 	}
@@ -439,8 +466,11 @@ func (m *apiCredentialModel) fill(c *client.APICredential) {
 	m.Version = types.Int64Value(c.Version)
 }
 
-func (r *apiCredentialResource) set(ctx context.Context, m *apiCredentialModel, d *diag.Diagnostics) {
-	in := m.input(ctx, d)
+// set stores the credential; config supplies the write-only secret, which the plan never holds.
+func (r *apiCredentialResource) set(ctx context.Context, m *apiCredentialModel, config tfsdk.Config, d *diag.Diagnostics) {
+	var secretWO types.String
+	d.Append(config.GetAttribute(ctx, path.Root("secret_wo"), &secretWO)...)
+	in := m.input(ctx, secretWO.ValueString(), d)
 	if d.HasError() {
 		return
 	}
@@ -450,6 +480,7 @@ func (r *apiCredentialResource) set(ctx context.Context, m *apiCredentialModel, 
 		return
 	}
 	m.fill(c)
+	m.SecretWO = types.StringNull()
 }
 
 func (r *apiCredentialResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -458,7 +489,7 @@ func (r *apiCredentialResource) Create(ctx context.Context, req resource.CreateR
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	r.set(ctx, &plan, &resp.Diagnostics)
+	r.set(ctx, &plan, req.Config, &resp.Diagnostics)
 	if !resp.Diagnostics.HasError() {
 		resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 	}
@@ -480,8 +511,12 @@ func (r *apiCredentialResource) Read(ctx context.Context, req resource.ReadReque
 		return
 	}
 	if c.Version != state.Version.ValueInt64() {
-		// Changed outside Terraform: the stored secret is unknown, so plan a replacement of it.
-		state.Secret = types.StringValue("")
+		// Changed outside Terraform: plan sending the configured secret again.
+		if state.SecretWOVersion.IsNull() {
+			state.Secret = types.StringValue("")
+		} else {
+			state.SecretWOVersion = types.Int64Null()
+		}
 	}
 	state.fill(c)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
@@ -493,7 +528,7 @@ func (r *apiCredentialResource) Update(ctx context.Context, req resource.UpdateR
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	r.set(ctx, &plan, &resp.Diagnostics)
+	r.set(ctx, &plan, req.Config, &resp.Diagnostics)
 	if !resp.Diagnostics.HasError() {
 		resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 	}

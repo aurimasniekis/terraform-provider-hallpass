@@ -6,6 +6,14 @@ All notable changes to the HallPass Terraform provider are documented in this fi
 
 ## [Unreleased]
 
+## [0.5.1] - 2026-10-27
+
+### Added
+
+- `hallpass_api_credential.secret_wo` and `secret_wo_version`: a write-only secret (Terraform 1.11+) that is never
+  stored in plan or state, for example from an ephemeral resource. It is sent on create and whenever
+  `secret_wo_version` changes. Exactly one of `secret` and `secret_wo` is required.
+
 ## [0.5.0] - 2026-10-27
 
 For [HallPass 0.6.0](https://github.com/aurimasniekis/go-hallpass/releases/tag/v0.6.0); the new resources need it.
@@ -73,6 +81,7 @@ First release, for [HallPass 0.1.0](https://github.com/aurimasniekis/go-hallpass
   `hallpass_gateway_host_keys`.
 - Optimistic concurrency on every update (`If-Match`), and retried creates that never duplicate (`Idempotency-Key`).
 
+[0.5.1]: https://github.com/aurimasniekis/terraform-provider-hallpass/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/aurimasniekis/terraform-provider-hallpass/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/aurimasniekis/terraform-provider-hallpass/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/aurimasniekis/terraform-provider-hallpass/compare/v0.2.0...v0.3.0
